@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- =====================================================================
+       TECHNOPIXEL SPACE INVADERS
+       Workshop Day 1 — TechNoPixel Web Game Development Workshop
+       Created by Dave Punzalan · TECHNOPIXEL
+       ===================================================================== -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="description" content="TECHNOPIXEL SPACE INVADERS — Defend the Grid. Save the Pixelverse." />
+  <title>TECHNOPIXEL SPACE INVADERS</title>
+
+  <!-- Favicon: the TechNoPixel emblem -->
+  <link rel="icon" type="image/png" href="techassets/newLogo.png" />
+
+  <!-- Google Fonts: Press Start 2P for that perfect pixel-art look -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap"
+    rel="stylesheet"
+  />
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ==========================================================
+       SCREEN 1: CINEMATIC LOADING SCREEN
+       Shown while assets are loading. Transitions to landing page.
+       ========================================================== -->
+  <div id="loading-screen" class="screen active" role="progressbar" aria-label="Loading TECHNOPIXEL SPACE INVADERS" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+
+    <!-- Falling katakana code effect rendered on this canvas -->
+    <canvas id="matrix-canvas" aria-hidden="true"></canvas>
+
+    <!-- Central loading content -->
+    <div class="loading-content">
+
+      <!-- TechNoPixel emblem (magenta pixel logo) -->
+      <div class="loading-logo-wrap">
+        <img
+          src="techassets/newLogo.png"
+          alt="TechNoPixel emblem"
+          class="loading-emblem"
+          id="loading-emblem-img"
+        />
+      </div>
+
+      <!-- TechNoPixel wordmark -->
+      <div class="loading-wordmark-wrap">
+        <img
+          src="techassets/TEXT.png"
+          alt="TechNoPixel wordmark"
+          class="loading-wordmark"
+          id="loading-wordmark-img"
+        />
+      </div>
+
+      <!-- Subtitle / tagline -->
+      <p class="loading-subtitle">SPACE INVADERS</p>
+
+      <!-- Status message that changes as assets load -->
+      <p class="loading-status" id="loading-status">INITIALIZING PIXEL UNIVERSE...</p>
+
+      <!-- Progress bar -->
+      <div class="loading-bar-track" aria-hidden="true">
+        <div class="loading-bar-fill" id="loading-bar-fill"></div>
+        <span class="loading-bar-percent" id="loading-bar-percent">0%</span>
+      </div>
+
+      <!-- Decorative flicker line -->
+      <div class="loading-scanline" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <!-- ==========================================================
+       SCREEN 2: LANDING PAGE
+       Brand hero, navigation, instructions, enemy types, power-ups.
+       ========================================================== -->
+  <div id="landing-screen" class="screen" role="main">
+
+    <!-- ---- TOP NAVIGATION ---- -->
+    <nav class="nav-bar" role="navigation" aria-label="Main navigation">
+      <div class="nav-inner">
+
+        <!-- Brand logo in nav -->
+        <a href="#hero" class="nav-brand" aria-label="TECHNOPIXEL Home">
+          <img src="techassets/newLogo.png" alt="" class="nav-emblem" aria-hidden="true" />
+          <span class="nav-title">TECHNOPIXEL</span>
+        </a>
+
+        <!-- Nav links (desktop) -->
+        <ul class="nav-links" role="list">
+          <li><a href="#hero"       class="nav-link">PLAY</a></li>
+          <li><a href="#how-to-play" class="nav-link">HOW TO PLAY</a></li>
+          <li><a href="#enemies"    class="nav-link">ENEMIES</a></li>
+          <li><a href="#powerups"   class="nav-link">POWER-UPS</a></li>
+          <li><a href="#about"      class="nav-link">ABOUT</a></li>
+        </ul>
+
+        <!-- Music control (always visible) -->
+        <div class="nav-music" id="nav-music-control">
+          <button
+            class="music-btn"
+            id="music-toggle-btn"
+            aria-label="Toggle music"
+            aria-pressed="false"
+            title="Toggle Background Music"
+          >
+            <span class="music-icon" id="music-icon">🎵</span>
+            <span class="music-label" id="music-label">MUSIC OFF</span>
+          </button>
+          <span class="music-track" id="music-track-label">NOW PLAYING · music.mp3</span>
+        </div>
+
+        <!-- Hamburger for mobile -->
+        <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+
+      <!-- Mobile menu drawer -->
+      <div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label="Navigation menu">
+        <ul role="list">
+          <li><a href="#hero"        class="nav-link" data-close-menu>PLAY</a></li>
+          <li><a href="#how-to-play" class="nav-link" data-close-menu>HOW TO PLAY</a></li>
+          <li><a href="#enemies"     class="nav-link" data-close-menu>ENEMIES</a></li>
+          <li><a href="#powerups"    class="nav-link" data-close-menu>POWER-UPS</a></li>
+          <li><a href="#about"       class="nav-link" data-close-menu>ABOUT</a></li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- ---- HERO SECTION ---- -->
+    <section id="hero" class="hero-section" aria-label="Hero">
+      <!-- Parallax star layer -->
+      <div class="hero-stars" aria-hidden="true"></div>
+
+      <div class="hero-content">
+
+        <!-- Logo block -->
+        <div class="hero-logo-block">
+          <img src="techassets/TEXT.png" alt="TechNoPixel" class="hero-wordmark" />
+          <h1 class="hero-game-title">SPACE INVADERS</h1>
+        </div>
+
+        <!-- Tagline and CTA -->
+        <p class="hero-tagline">ENTER THE PIXEL UNIVERSE.</p>
+        <p class="hero-cta-text">DEFEND THE GRID. SAVE THE PIXELVERSE.</p>
+
+        <!-- High score badge -->
+        <div class="hero-hiscore-badge" id="hero-hiscore-badge" aria-live="polite">
+          <span class="hiscore-label">BEST SCORE</span>
+          <span class="hiscore-value" id="hero-hiscore-value">000000</span>
+        </div>
+
+        <!-- Start button -->
+        <button
+          class="btn btn-primary btn-start-game"
+          id="start-game-btn"
+          aria-label="Start TECHNOPIXEL SPACE INVADERS"
+        >
+          ▶ START GAME
+        </button>
+
+        <!-- Keyboard hint -->
+        <p class="hero-enter-hint">or press <kbd>ENTER</kbd> to begin</p>
+      </div>
+
+      <!-- Floating spaceship decoration -->
+      <div class="hero-ship-wrap" aria-hidden="true">
+        <img src="techassets/technospaceship.png" alt="" class="hero-ship-img" />
+      </div>
+    </section>
+
+    <!-- ---- HOW TO PLAY ---- -->
+    <section id="how-to-play" class="content-section" aria-label="How to Play">
+      <div class="section-inner">
+        <h2 class="section-title">HOW TO PLAY</h2>
+
+        <div class="controls-grid">
+
+          <div class="controls-group">
+            <h3 class="controls-group-title">⌨️ KEYBOARD</h3>
+            <ul class="controls-list" role="list">
+              <li><kbd>A</kbd> / <kbd>←</kbd> <span>Move Left</span></li>
+              <li><kbd>D</kbd> / <kbd>→</kbd> <span>Move Right</span></li>
+              <li><kbd>SPACE</kbd> <span>Shoot</span></li>
+              <li><kbd>P</kbd> <span>Pause / Resume</span></li>
+              <li><kbd>F</kbd> <span>Toggle Fullscreen</span></li>
+              <li><kbd>ENTER</kbd> <span>Start / Restart</span></li>
+            </ul>
+          </div>
+
+          <div class="controls-group">
+            <h3 class="controls-group-title">📱 MOBILE</h3>
+            <ul class="controls-list" role="list">
+              <li><span class="ctrl-icon">🕹️</span> <span>Analog Stick — Move</span></li>
+              <li><span class="ctrl-icon">🔥</span> <span>FIRE Button — Shoot</span></li>
+              <li><span class="ctrl-icon">⏸️</span> <span>PAUSE Button — Pause</span></li>
+            </ul>
+          </div>
+
+          <div class="controls-group">
+            <h3 class="controls-group-title">🎯 OBJECTIVE</h3>
+            <ol class="objective-list" role="list">
+              <li>Press Start or <kbd>ENTER</kbd> to begin.</li>
+              <li>Destroy invaders before they reach the ground.</li>
+              <li>Dodge enemy projectiles.</li>
+              <li>Collect power-ups to upgrade your blaster.</li>
+              <li>Earn points across 5 increasingly harder waves.</li>
+              <li>Survive all 5 waves to win!</li>
+            </ol>
+          </div>
+
+        </div>
+
+        <!-- Wave progression explanation -->
+        <div class="wave-info-box">
+          <h3 class="wave-info-title">📡 WAVE PROGRESSION</h3>
+          <div class="wave-cards">
+            <div class="wave-card"><span class="wave-num">WAVE 1</span><p>Formation of 30 invaders. Slow speed. 2 side invaders max.</p></div>
+            <div class="wave-card"><span class="wave-num">WAVE 2</span><p>Faster movement. More frequent enemy fire. 3 side invaders.</p></div>
+            <div class="wave-card"><span class="wave-num">WAVE 3</span><p>Larger formation. Enemy shots speed up. 4 side invaders.</p></div>
+            <div class="wave-card"><span class="wave-num">WAVE 4</span><p>Enemies descend faster. Frequent multi-shot from enemies.</p></div>
+            <div class="wave-card wave-card-final"><span class="wave-num">WAVE 5 ⚡</span><p>Final assault. Maximum speed. Survive to save the Pixelverse!</p></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- ENEMY TYPES ---- -->
+    <section id="enemies" class="content-section section-dark" aria-label="Enemy Types">
+      <div class="section-inner">
+        <h2 class="section-title">ENEMY TYPES</h2>
+
+        <!-- FORMATION INVADERS -->
+        <h3 class="enemy-group-title">FORMATION INVADERS</h3>
+        <div class="enemy-grid" role="list" aria-label="Formation invaders">
+
+          <article class="enemy-card" role="listitem" aria-label="Blue Invader — 10 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/enemy1.png" alt="Blue Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">BLUE INVADER</span>
+              <span class="enemy-points" style="color:#7ec8ff">10 PTS</span>
+              <span class="enemy-desc">Most common. Slow and predictable.</span>
+            </div>
+          </article>
+
+          <article class="enemy-card" role="listitem" aria-label="Red Invader — 20 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/enemy2.png" alt="Red Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">RED INVADER</span>
+              <span class="enemy-points" style="color:#ff7e7e">20 PTS</span>
+              <span class="enemy-desc">Fires more frequently. Watch out!</span>
+            </div>
+          </article>
+
+          <article class="enemy-card" role="listitem" aria-label="Green Invader — 50 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/enemy3.png" alt="Green Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">GREEN INVADER</span>
+              <span class="enemy-points" style="color:#7eff9e">50 PTS</span>
+              <span class="enemy-desc">Rare and tough. High value target.</span>
+            </div>
+          </article>
+
+          <article class="enemy-card" role="listitem" aria-label="Pink Invader — 100 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/enemy4.png" alt="Pink Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">PINK INVADER</span>
+              <span class="enemy-points" style="color:#ff7eff">100 PTS</span>
+              <span class="enemy-desc">Extremely rare. Maximum points!</span>
+            </div>
+          </article>
+
+        </div><!-- /enemy-grid -->
+
+        <!-- SIDE INVADERS -->
+        <h3 class="enemy-group-title" style="margin-top:2.5rem">SIDE INVADERS</h3>
+        <p class="enemy-group-desc">These rogue invaders sweep across the screen from either side. Shoot them for bonus points!</p>
+        <div class="enemy-grid" role="list" aria-label="Side invaders">
+
+          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Blue Side Invader — 10 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/sidenemy1.png" alt="Blue Side Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">BLUE RAIDER</span>
+              <span class="enemy-points" style="color:#7ec8ff">10 PTS</span>
+              <span class="enemy-desc">Swoops across at moderate speed.</span>
+            </div>
+          </article>
+
+          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Red Side Invader — 20 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/sidenemy2.png" alt="Red Side Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">RED RAIDER</span>
+              <span class="enemy-points" style="color:#ff7e7e">20 PTS</span>
+              <span class="enemy-desc">Faster than the blue raider.</span>
+            </div>
+          </article>
+
+          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Green Side Invader — 50 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/sidenemy3.png" alt="Green Side Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">GREEN RAIDER</span>
+              <span class="enemy-points" style="color:#7eff9e">50 PTS</span>
+              <span class="enemy-desc">Rare and speedy. High reward!</span>
+            </div>
+          </article>
+
+          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Pink Side Invader — 100 points">
+            <div class="enemy-sprite-wrap">
+              <img src="techassets/sidenemy4.png" alt="Pink Side Invader" class="enemy-sprite" loading="lazy" />
+            </div>
+            <div class="enemy-info">
+              <span class="enemy-name">PINK RAIDER</span>
+              <span class="enemy-points" style="color:#ff7eff">100 PTS</span>
+              <span class="enemy-desc">Extremely rare side invader. Maximum bonus!</span>
+            </div>
+          </article>
+
+        </div><!-- /enemy-grid side -->
+      </div>
+    </section>
+
+    <!-- ---- POWER-UPS ---- -->
+    <section id="powerups" class="content-section" aria-label="Power-Ups">
+      <div class="section-inner">
+        <h2 class="section-title">POWER-UPS</h2>
+        <p class="section-sub">Destroy enemies for a 20% chance to drop a power-up. Fly into it to collect!</p>
+
+        <div class="powerup-grid" role="list" aria-label="Power-ups">
+
+          <article class="powerup-card" role="listitem" aria-label="Extra Life power-up">
+            <div class="powerup-icon-wrap">
+              <img src="techassets/heart.png" alt="Extra Life" class="powerup-sprite" />
+            </div>
+            <div class="powerup-info">
+              <span class="powerup-name">EXTRA LIFE</span>
+              <span class="powerup-effect">Restores 1 life (max 5).</span>
+            </div>
+          </article>
+
+          <article class="powerup-card" role="listitem" aria-label="Shield power-up">
+            <div class="powerup-icon-wrap">
+              <img src="techassets/shield.png" alt="Shield" class="powerup-sprite" />
+            </div>
+            <div class="powerup-info">
+              <span class="powerup-name">SHIELD</span>
+              <span class="powerup-effect">Absorbs 1 hit. Shown as a glowing ring.</span>
+            </div>
+          </article>
+
+          <article class="powerup-card" role="listitem" aria-label="Multishot power-up">
+            <div class="powerup-icon-wrap">
+              <img src="techassets/multishot.png" alt="Multishot" class="powerup-sprite" />
+            </div>
+            <div class="powerup-info">
+              <span class="powerup-name">MULTISHOT</span>
+              <span class="powerup-effect">Fires 3 bullets in a spread for 8 seconds.</span>
+            </div>
+          </article>
+
+          <article class="powerup-card" role="listitem" aria-label="Big Bullet power-up">
+            <div class="powerup-icon-wrap">
+              <img src="techassets/bigbulletmoto.png" alt="Big Bullet" class="powerup-sprite" />
+            </div>
+            <div class="powerup-info">
+              <span class="powerup-name">BIG BULLET</span>
+              <span class="powerup-effect">Large powerful shots for 8 seconds.</span>
+            </div>
+          </article>
+
+          <article class="powerup-card" role="listitem" aria-label="Rapid Shot power-up">
+            <div class="powerup-icon-wrap">
+              <img src="techassets/rapidshot.png" alt="Rapid Shot" class="powerup-sprite" />
+            </div>
+            <div class="powerup-info">
+              <span class="powerup-name">RAPID SHOT</span>
+              <span class="powerup-effect">Doubles fire rate for 8 seconds.</span>
+            </div>
+          </article>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ---- ABOUT / STORYLINE ---- -->
+    <section id="about" class="content-section section-dark" aria-label="About">
+      <div class="section-inner about-inner">
+
+        <div class="about-story">
+          <h2 class="section-title">THE STORY</h2>
+          <p class="story-text">
+            The Pixelverse is under attack. A breach in the Neon Rift has unleashed waves of
+            invaders into the digital frontier. Pilot the TechNoPixel spaceship, defend the grid,
+            collect powerful upgrades, and push back the invasion. Each wave brings faster enemies
+            and greater danger. Only a true arcade pilot can survive the final assault.
+          </p>
+        </div>
+
+        <div class="about-credit">
+          <img src="techassets/newLogo.png" alt="TechNoPixel logo" class="about-logo" />
+          <p class="credit-text">Created by <strong>Dave Punzalan</strong> · TECHNOPIXEL</p>
+          <p class="credit-sub">TechNoPixel Web Game Development Workshop · December 10, 2026</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ---- FOOTER ---- -->
+    <footer class="site-footer" role="contentinfo">
+      <div class="footer-inner">
+        <span class="footer-brand">TECHNOPIXEL SPACE INVADERS</span>
+        <span class="footer-credit">© 2026 Dave Punzalan · TechNoPixel</span>
+        <button class="btn btn-primary btn-sm footer-play-btn" id="footer-play-btn" aria-label="Play TECHNOPIXEL SPACE INVADERS">
+          ▶ PLAY NOW
+        </button>
+      </div>
+    </footer>
+
+  </div><!-- /#landing-screen -->
+
+  <!-- ==========================================================
+       SCREEN 3: GAME SCREEN
+       Contains the canvas and all in-game overlays.
+       ========================================================== -->
+  <div id="game-screen" class="screen" role="application" aria-label="TECHNOPIXEL SPACE INVADERS gameplay">
+
+    <!-- Back to menu button (top-left, always visible during gameplay) -->
+    <button class="btn-back-menu" id="btn-back-menu" aria-label="Return to main menu" title="Back to Menu">
+      ◀ MENU
+    </button>
+
+    <!-- In-game music control (top-right) -->
+    <div class="ingame-music-ctrl">
+      <button
+        class="music-btn music-btn-sm"
+        id="ingame-music-btn"
+        aria-label="Toggle music"
+        aria-pressed="false"
+      >
+        <span id="ingame-music-icon">🎵</span>
+      </button>
+    </div>
+
+    <!-- === GAME CANVAS === -->
+    <canvas
+      id="game-canvas"
+      aria-label="Game canvas — use keyboard or on-screen controls to play"
+      role="img"
+    ></canvas>
+
+    <!-- === PAUSE OVERLAY === -->
+    <div id="pause-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Game paused">
+      <div class="overlay-box">
+        <h2 class="overlay-title">⏸ PAUSED</h2>
+        <p class="overlay-sub">The Pixelverse awaits your return.</p>
+        <button class="btn btn-primary" id="resume-btn" aria-label="Resume game">▶ RESUME</button>
+        <button class="btn btn-outline" id="pause-restart-btn" aria-label="Restart game">↺ RESTART</button>
+        <button class="btn btn-outline" id="pause-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
+      </div>
+    </div>
+
+    <!-- === WAVE CLEARED OVERLAY === -->
+    <div id="wave-cleared-overlay" class="overlay hidden" role="status" aria-live="polite" aria-label="Wave cleared">
+      <div class="overlay-box overlay-wave">
+        <p class="wave-cleared-sub">WAVE CLEARED!</p>
+        <h2 class="wave-cleared-title" id="wave-cleared-title">WAVE 1</h2>
+        <p class="wave-cleared-next" id="wave-cleared-next">Get ready for Wave 2...</p>
+        <div class="wave-countdown" id="wave-countdown">3</div>
+      </div>
+    </div>
+
+    <!-- === VICTORY OVERLAY === -->
+    <div id="victory-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Victory">
+      <div class="overlay-box overlay-victory">
+        <p class="victory-label">🏆 YOU WIN!</p>
+        <h2 class="victory-title">PIXELVERSE SAVED!</h2>
+        <p class="victory-sub">All 5 waves defeated. You are a true arcade pilot.</p>
+        <div class="result-scores">
+          <div class="result-score-row">
+            <span>FINAL SCORE</span>
+            <span class="result-score-val" id="victory-score">0</span>
+          </div>
+          <div class="result-score-row">
+            <span>BEST SCORE</span>
+            <span class="result-score-val result-hiscore" id="victory-hiscore">0</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="victory-replay-btn" aria-label="Play again">▶ PLAY AGAIN</button>
+        <button class="btn btn-outline" id="victory-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
+      </div>
+    </div>
+
+    <!-- === GAME OVER OVERLAY === -->
+    <div id="gameover-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Game over">
+      <div class="overlay-box overlay-gameover">
+        <p class="gameover-label">💀 GAME OVER</p>
+        <h2 class="gameover-title">THE GRID HAS FALLEN</h2>
+        <div class="result-scores">
+          <div class="result-score-row">
+            <span>FINAL SCORE</span>
+            <span class="result-score-val" id="gameover-score">0</span>
+          </div>
+          <div class="result-score-row">
+            <span>WAVE REACHED</span>
+            <span class="result-score-val" id="gameover-wave">1</span>
+          </div>
+          <div class="result-score-row">
+            <span>BEST SCORE</span>
+            <span class="result-score-val result-hiscore" id="gameover-hiscore">0</span>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="gameover-replay-btn" aria-label="Play again">▶ PLAY AGAIN</button>
+        <button class="btn btn-outline" id="gameover-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
+      </div>
+    </div>
+
+    <!-- === MOBILE TOUCH CONTROLS === -->
+    <div id="mobile-controls" class="mobile-controls" aria-label="Touch controls" role="group">
+
+      <!-- Virtual analog stick (left side) -->
+      <div class="joystick-wrap" id="joystick-wrap" aria-label="Movement joystick">
+        <div class="joystick-base" id="joystick-base">
+          <div class="joystick-thumb" id="joystick-thumb" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <!-- Right-side action buttons -->
+      <div class="action-btns">
+        <button
+          class="btn-fire"
+          id="btn-fire"
+          aria-label="Fire"
+          aria-describedby="fire-hint"
+        >
+          🔥
+          <span class="btn-label">FIRE</span>
+        </button>
+        <span id="fire-hint" class="sr-only">Hold to fire continuously</span>
+
+        <button
+          class="btn-pause-mobile"
+          id="btn-pause-mobile"
+          aria-label="Pause"
+        >
+          ⏸
+          <span class="btn-label">PAUSE</span>
+        </button>
+      </div>
+
+    </div><!-- /mobile-controls -->
+
+    <!-- Active power-up HUD (shown during gameplay) -->
+    <div id="powerup-hud" class="powerup-hud" aria-live="polite" aria-label="Active power-ups"></div>
+
+  </div><!-- /#game-screen -->
+
+  <!-- Main game script -->
+  <script src="game.js"></script>
+
+</body>
+</html>
