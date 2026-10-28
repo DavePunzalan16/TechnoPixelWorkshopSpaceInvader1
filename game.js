@@ -162,35 +162,28 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /**
    * loadImage — loads a single image from a URL.
-   * Returns true if the URL is null so missing assets are handled gracefully.
    */
   function loadImage(key, url) {
-    // If no URL was provided (power-up images), skip loading
     if (!url) {
-      imgs[key] = null; // mark as missing
+      imgs[key] = null;
       return;
     }
-
-    totalAssets++; // count this image in our total
 
     const img = new Image();
 
     img.onload = function () {
-      // Image loaded successfully — store it on the shelf
       imgs[key] = img;
       loadedAssets++;
       updateLoadingProgress();
     };
 
     img.onerror = function () {
-      // Image failed to load (file missing or wrong path)
       console.warn('ASSET NOT FOUND: ' + url + ' (key: ' + key + ')');
-      imgs[key] = null; // mark as missing so rendering uses fallback
+      imgs[key] = null;
       loadedAssets++;
       updateLoadingProgress();
     };
 
-    // Setting src starts the download
     img.src = url;
   }
 
@@ -200,36 +193,44 @@ document.addEventListener('DOMContentLoaded', function () {
       ? Math.round((loadedAssets / totalAssets) * 100)
       : 100;
 
-    // Update the progress bar width
-    if (loadingBarFill)   loadingBarFill.style.width    = percent + '%';
-    if (loadingBarPct)    loadingBarPct.textContent      = percent + '%';
+    if (loadingBarFill)  loadingBarFill.style.width   = percent + '%';
+    if (loadingBarPct)   loadingBarPct.textContent     = percent + '%';
 
-    // Update the status text every 20%
-    const newMsg = loadingMessages[Math.min(
+    const msgIdx = Math.min(
       Math.floor((percent / 100) * (loadingMessages.length - 1)),
       loadingMessages.length - 1
-    )];
-    if (loadingStatusEl) loadingStatusEl.textContent = newMsg;
+    );
+    if (loadingStatusEl) loadingStatusEl.textContent = loadingMessages[msgIdx];
 
-    // Update ARIA attribute for screen readers
-    const bar = document.getElementById('loading-screen');
-    if (bar) bar.setAttribute('aria-valuenow', percent);
+    const loadScreen = document.getElementById('loading-screen');
+    if (loadScreen) loadScreen.setAttribute('aria-valuenow', percent);
 
-    // When all assets are done, transition to landing page
     if (loadedAssets >= totalAssets) {
       setTimeout(transitionToLanding, 800);
     }
   }
 
-  // Kick off loading all images
-  Object.entries(ASSETS.images).forEach(([key, url]) => {
-    loadImage(key, url);
-  });
+  // IMPORTANT: Count totalAssets FIRST, then start loading.
+  // This prevents a race condition where cached images fire onload
+  // before totalAssets has been fully counted.
+  const imageEntries = Object.entries(ASSETS.images).filter(([, url]) => url !== null);
+  totalAssets = imageEntries.length;
 
-  // Safety net: if nothing was queued (somehow), transition anyway
   if (totalAssets === 0) {
+    // No images to load at all — go straight to landing
     setTimeout(transitionToLanding, 1200);
+  } else {
+    // Now start loading all images
+    imageEntries.forEach(([key, url]) => loadImage(key, url));
   }
+
+  // Hard timeout safety net — if loading stalls for any reason, proceed after 8 seconds
+  setTimeout(function () {
+    if (document.getElementById('loading-screen').classList.contains('active')) {
+      console.warn('Loading timeout — proceeding to landing page anyway.');
+      transitionToLanding();
+    }
+  }, 8000);
 
   // ===========================================================================
   // MATRIX (FALLING CODE) ANIMATION
@@ -1979,7 +1980,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===========================================================================
 
   /** transitionToLanding — fades out the loading screen and shows the landing page. */
+  let hasTransitioned = false; // guard against double-calls
   function transitionToLanding() {
+    if (hasTransitioned) return;
+    hasTransitioned = true;
+
     stopMatrix(); // Stop the matrix animation to save CPU
 
     const loadingScreen = document.getElementById('loading-screen');
@@ -1991,13 +1996,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
       setTimeout(function () {
         loadingScreen.classList.remove('active');
-        loadingScreen.style.display = 'none'; // fully hide
         if (landingScreen) {
           landingScreen.classList.add('active');
           STATE = 'menu';
           updateHeroHiScore();
         }
       }, 850);
+    } else if (landingScreen) {
+      landingScreen.classList.add('active');
+      STATE = 'menu';
+      updateHeroHiScore();
     }
   }
 

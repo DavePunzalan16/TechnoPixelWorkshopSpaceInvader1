@@ -85,8 +85,24 @@ body {
   width: 100%;
 }
 
+/* Default active state — overridden per-screen below */
 .screen.active {
   display: block;
+}
+
+/* Loading screen needs flex to center its content */
+#loading-screen.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Game screen needs flex to center the canvas */
+#game-screen.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .overlay {
@@ -108,10 +124,6 @@ body {
    4. LOADING SCREEN
    -------------------------------------------------------------------------- */
 #loading-screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
   background: radial-gradient(ellipse at 50% 40%, #2a0060 0%, #0d0020 70%);
   overflow: hidden;
@@ -1015,15 +1027,8 @@ body {
    -------------------------------------------------------------------------- */
 #game-screen {
   background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   min-height: 100vh;
   position: relative;
-}
-
-#game-screen.active {
-  display: flex;
 }
 
 #game-canvas {
