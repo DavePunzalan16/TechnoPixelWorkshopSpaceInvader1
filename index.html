@@ -6,24 +6,24 @@
        Workshop Day 1 — TechNoPixel Web Game Development Workshop
        Created by Dave Punzalan · TECHNOPIXEL
        ===================================================================== -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-  <meta name="description" content="TECHNOPIXEL SPACE INVADERS — Defend the Grid. Save the Pixelverse." />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="TECHNOPIXEL SPACE INVADERS — Defend the Grid. Save the Pixelverse.">
   <title>TECHNOPIXEL SPACE INVADERS</title>
 
   <!-- Favicon: the TechNoPixel emblem -->
-  <link rel="icon" type="image/png" href="techassets/newLogo.png" />
+  <link rel="icon" type="image/png" href="techassets/newLogo.png">
 
   <!-- Google Fonts: Press Start 2P for that perfect pixel-art look -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
     href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Orbitron:wght@400;700;900&display=swap"
     rel="stylesheet"
-  />
+  >
 
   <!-- Main stylesheet -->
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -31,7 +31,7 @@
        SCREEN 1: CINEMATIC LOADING SCREEN
        Shown while assets are loading. Transitions to landing page.
        ========================================================== -->
-  <div id="loading-screen" class="screen active" role="progressbar" aria-label="Loading TECHNOPIXEL SPACE INVADERS" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <section id="loading-screen" class="screen active" aria-label="Loading TECHNOPIXEL SPACE INVADERS">
 
     <!-- Falling katakana code effect rendered on this canvas -->
     <canvas id="matrix-canvas" aria-hidden="true"></canvas>
@@ -46,7 +46,7 @@
           alt="TechNoPixel emblem"
           class="loading-emblem"
           id="loading-emblem-img"
-        />
+        >
       </div>
 
       <!-- TechNoPixel wordmark -->
@@ -56,7 +56,7 @@
           alt="TechNoPixel wordmark"
           class="loading-wordmark"
           id="loading-wordmark-img"
-        />
+        >
       </div>
 
       <!-- Subtitle / tagline -->
@@ -74,26 +74,26 @@
       <!-- Decorative flicker line -->
       <div class="loading-scanline" aria-hidden="true"></div>
     </div>
-  </div>
+  </section>
 
   <!-- ==========================================================
        SCREEN 2: LANDING PAGE
        Brand hero, navigation, instructions, enemy types, power-ups.
        ========================================================== -->
-  <div id="landing-screen" class="screen" role="main">
+  <main id="landing-screen" class="screen">
 
     <!-- ---- TOP NAVIGATION ---- -->
-    <nav class="nav-bar" role="navigation" aria-label="Main navigation">
+    <nav class="nav-bar" aria-label="Main navigation">
       <div class="nav-inner">
 
         <!-- Brand logo in nav -->
         <a href="#hero" class="nav-brand" aria-label="TECHNOPIXEL Home">
-          <img src="techassets/newLogo.png" alt="" class="nav-emblem" aria-hidden="true" />
+          <img src="techassets/newLogo.png" alt="" class="nav-emblem" aria-hidden="true">
           <span class="nav-title">TECHNOPIXEL</span>
         </a>
 
         <!-- Nav links (desktop) -->
-        <ul class="nav-links" role="list">
+        <ul class="nav-links">
           <li><a href="#hero"       class="nav-link">PLAY</a></li>
           <li><a href="#how-to-play" class="nav-link">HOW TO PLAY</a></li>
           <li><a href="#enemies"    class="nav-link">ENEMIES</a></li>
@@ -104,6 +104,7 @@
         <!-- Music control (always visible) -->
         <div class="nav-music" id="nav-music-control">
           <button
+            type="button"
             class="music-btn"
             id="music-toggle-btn"
             aria-label="Toggle music"
@@ -117,14 +118,14 @@
         </div>
 
         <!-- Hamburger for mobile -->
-        <button class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+        <button type="button" class="nav-hamburger" id="nav-hamburger" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
           <span></span><span></span><span></span>
         </button>
       </div>
 
       <!-- Mobile menu drawer -->
-      <div class="mobile-menu" id="mobile-menu" aria-hidden="true" role="dialog" aria-label="Navigation menu">
-        <ul role="list">
+      <div class="mobile-menu" id="mobile-menu" role="dialog" aria-label="Navigation menu">
+        <ul>
           <li><a href="#hero"        class="nav-link" data-close-menu>PLAY</a></li>
           <li><a href="#how-to-play" class="nav-link" data-close-menu>HOW TO PLAY</a></li>
           <li><a href="#enemies"     class="nav-link" data-close-menu>ENEMIES</a></li>
@@ -143,7 +144,7 @@
 
         <!-- Logo block -->
         <div class="hero-logo-block">
-          <img src="techassets/TEXT.png" alt="TechNoPixel" class="hero-wordmark" />
+          <img src="techassets/TEXT.png" alt="TechNoPixel" class="hero-wordmark">
           <h1 class="hero-game-title">SPACE INVADERS</h1>
         </div>
 
@@ -159,6 +160,7 @@
 
         <!-- Start button -->
         <button
+          type="button"
           class="btn btn-primary btn-start-game"
           id="start-game-btn"
           aria-label="Start TECHNOPIXEL SPACE INVADERS"
@@ -172,7 +174,7 @@
 
       <!-- Floating spaceship decoration -->
       <div class="hero-ship-wrap" aria-hidden="true">
-        <img src="techassets/technospaceship.png" alt="" class="hero-ship-img" />
+        <img src="techassets/technospaceship.png" alt="" class="hero-ship-img">
       </div>
     </section>
 
@@ -185,7 +187,7 @@
 
           <div class="controls-group">
             <h3 class="controls-group-title">⌨️ KEYBOARD</h3>
-            <ul class="controls-list" role="list">
+            <ul class="controls-list">
               <li><kbd>A</kbd> / <kbd>←</kbd> <span>Move Left</span></li>
               <li><kbd>D</kbd> / <kbd>→</kbd> <span>Move Right</span></li>
               <li><kbd>SPACE</kbd> <span>Shoot</span></li>
@@ -197,7 +199,7 @@
 
           <div class="controls-group">
             <h3 class="controls-group-title">📱 MOBILE</h3>
-            <ul class="controls-list" role="list">
+            <ul class="controls-list">
               <li><span class="ctrl-icon">🕹️</span> <span>Analog Stick — Move</span></li>
               <li><span class="ctrl-icon">🔥</span> <span>FIRE Button — Shoot</span></li>
               <li><span class="ctrl-icon">⏸️</span> <span>PAUSE Button — Pause</span></li>
@@ -206,7 +208,7 @@
 
           <div class="controls-group">
             <h3 class="controls-group-title">🎯 OBJECTIVE</h3>
-            <ol class="objective-list" role="list">
+            <ol class="objective-list">
               <li>Press Start or <kbd>ENTER</kbd> to begin.</li>
               <li>Destroy invaders before they reach the ground.</li>
               <li>Dodge enemy projectiles.</li>
@@ -239,104 +241,104 @@
 
         <!-- FORMATION INVADERS -->
         <h3 class="enemy-group-title">FORMATION INVADERS</h3>
-        <div class="enemy-grid" role="list" aria-label="Formation invaders">
+        <ul class="enemy-grid" role="group" aria-label="Formation invaders">
 
-          <article class="enemy-card" role="listitem" aria-label="Blue Invader — 10 points">
+          <li class="enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/enemy1.png" alt="Blue Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/enemy1.png" alt="Blue Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">BLUE INVADER</span>
-              <span class="enemy-points" style="color:#7ec8ff">10 PTS</span>
+              <span class="enemy-points pts-blue">10 PTS</span>
               <span class="enemy-desc">Most common. Slow and predictable.</span>
             </div>
-          </article>
+          </li>
 
-          <article class="enemy-card" role="listitem" aria-label="Red Invader — 20 points">
+          <li class="enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/enemy2.png" alt="Red Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/enemy2.png" alt="Red Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">RED INVADER</span>
-              <span class="enemy-points" style="color:#ff7e7e">20 PTS</span>
+              <span class="enemy-points pts-red">20 PTS</span>
               <span class="enemy-desc">Fires more frequently. Watch out!</span>
             </div>
-          </article>
+          </li>
 
-          <article class="enemy-card" role="listitem" aria-label="Green Invader — 50 points">
+          <li class="enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/enemy3.png" alt="Green Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/enemy3.png" alt="Green Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">GREEN INVADER</span>
-              <span class="enemy-points" style="color:#7eff9e">50 PTS</span>
+              <span class="enemy-points pts-green">50 PTS</span>
               <span class="enemy-desc">Rare and tough. High value target.</span>
             </div>
-          </article>
+          </li>
 
-          <article class="enemy-card" role="listitem" aria-label="Pink Invader — 100 points">
+          <li class="enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/enemy4.png" alt="Pink Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/enemy4.png" alt="Pink Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">PINK INVADER</span>
-              <span class="enemy-points" style="color:#ff7eff">100 PTS</span>
+              <span class="enemy-points pts-pink">100 PTS</span>
               <span class="enemy-desc">Extremely rare. Maximum points!</span>
             </div>
-          </article>
+          </li>
 
-        </div><!-- /enemy-grid -->
+        </ul><!-- /enemy-grid -->
 
         <!-- SIDE INVADERS -->
-        <h3 class="enemy-group-title" style="margin-top:2.5rem">SIDE INVADERS</h3>
+        <h3 class="enemy-group-title enemy-group-title--spaced">SIDE INVADERS</h3>
         <p class="enemy-group-desc">These rogue invaders sweep across the screen from either side. Shoot them for bonus points!</p>
-        <div class="enemy-grid" role="list" aria-label="Side invaders">
+        <ul class="enemy-grid" role="group" aria-label="Side invaders">
 
-          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Blue Side Invader — 10 points">
+          <li class="enemy-card side-enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/sidenemy1.png" alt="Blue Side Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/sidenemy1.png" alt="Blue Side Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">BLUE RAIDER</span>
-              <span class="enemy-points" style="color:#7ec8ff">10 PTS</span>
+              <span class="enemy-points pts-blue">10 PTS</span>
               <span class="enemy-desc">Swoops across at moderate speed.</span>
             </div>
-          </article>
+          </li>
 
-          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Red Side Invader — 20 points">
+          <li class="enemy-card side-enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/sidenemy2.png" alt="Red Side Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/sidenemy2.png" alt="Red Side Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">RED RAIDER</span>
-              <span class="enemy-points" style="color:#ff7e7e">20 PTS</span>
+              <span class="enemy-points pts-red">20 PTS</span>
               <span class="enemy-desc">Faster than the blue raider.</span>
             </div>
-          </article>
+          </li>
 
-          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Green Side Invader — 50 points">
+          <li class="enemy-card side-enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/sidenemy3.png" alt="Green Side Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/sidenemy3.png" alt="Green Side Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">GREEN RAIDER</span>
-              <span class="enemy-points" style="color:#7eff9e">50 PTS</span>
+              <span class="enemy-points pts-green">50 PTS</span>
               <span class="enemy-desc">Rare and speedy. High reward!</span>
             </div>
-          </article>
+          </li>
 
-          <article class="enemy-card side-enemy-card" role="listitem" aria-label="Pink Side Invader — 100 points">
+          <li class="enemy-card side-enemy-card">
             <div class="enemy-sprite-wrap">
-              <img src="techassets/sidenemy4.png" alt="Pink Side Invader" class="enemy-sprite" loading="lazy" />
+              <img src="techassets/sidenemy4.png" alt="Pink Side Invader" class="enemy-sprite" loading="lazy">
             </div>
             <div class="enemy-info">
               <span class="enemy-name">PINK RAIDER</span>
-              <span class="enemy-points" style="color:#ff7eff">100 PTS</span>
+              <span class="enemy-points pts-pink">100 PTS</span>
               <span class="enemy-desc">Extremely rare side invader. Maximum bonus!</span>
             </div>
-          </article>
+          </li>
 
-        </div><!-- /enemy-grid side -->
+        </ul><!-- /enemy-grid side -->
       </div>
     </section>
 
@@ -346,59 +348,59 @@
         <h2 class="section-title">POWER-UPS</h2>
         <p class="section-sub">Destroy enemies for a 20% chance to drop a power-up. Fly into it to collect!</p>
 
-        <div class="powerup-grid" role="list" aria-label="Power-ups">
+        <ul class="powerup-grid" role="group" aria-label="Power-ups">
 
-          <article class="powerup-card" role="listitem" aria-label="Extra Life power-up">
+          <li class="powerup-card">
             <div class="powerup-icon-wrap">
-              <img src="techassets/heart.png" alt="Extra Life" class="powerup-sprite" />
+              <img src="techassets/heart.png" alt="Extra Life" class="powerup-sprite">
             </div>
             <div class="powerup-info">
               <span class="powerup-name">EXTRA LIFE</span>
-              <span class="powerup-effect">Restores 1 life (max 5).</span>
+              <span class="powerup-effect">Restores 1 life (max 5). sheesh</span>
             </div>
-          </article>
+          </li>
 
-          <article class="powerup-card" role="listitem" aria-label="Shield power-up">
+          <li class="powerup-card">
             <div class="powerup-icon-wrap">
-              <img src="techassets/shield.png" alt="Shield" class="powerup-sprite" />
+              <img src="techassets/shield.png" alt="Shield" class="powerup-sprite">
             </div>
             <div class="powerup-info">
               <span class="powerup-name">SHIELD</span>
-              <span class="powerup-effect">Absorbs 1 hit. Shown as a glowing ring.</span>
+              <span class="powerup-effect">Absorbs 1 hit. Shown as a glowing ring. sheesh</span>
             </div>
-          </article>
+          </li>
 
-          <article class="powerup-card" role="listitem" aria-label="Multishot power-up">
+          <li class="powerup-card">
             <div class="powerup-icon-wrap">
-              <img src="techassets/multishot.png" alt="Multishot" class="powerup-sprite" />
+              <img src="techassets/multishot.png" alt="Multishot" class="powerup-sprite">
             </div>
             <div class="powerup-info">
               <span class="powerup-name">MULTISHOT</span>
-              <span class="powerup-effect">Fires 3 bullets in a spread for 8 seconds.</span>
+              <span class="powerup-effect">Fires 3 bullets in a spread for 8 seconds. sheesh</span>
             </div>
-          </article>
+          </li>
 
-          <article class="powerup-card" role="listitem" aria-label="Big Bullet power-up">
+          <li class="powerup-card">
             <div class="powerup-icon-wrap">
-              <img src="techassets/bigbulletmoto.png" alt="Big Bullet" class="powerup-sprite" />
+              <img src="techassets/bigbullet.png" alt="Big Bullet" class="powerup-sprite">
             </div>
             <div class="powerup-info">
               <span class="powerup-name">BIG BULLET</span>
-              <span class="powerup-effect">Large powerful shots for 8 seconds.</span>
+              <span class="powerup-effect">Large powerful shots for 8 seconds. sheesh</span>
             </div>
-          </article>
+          </li>
 
-          <article class="powerup-card" role="listitem" aria-label="Rapid Shot power-up">
+          <li class="powerup-card">
             <div class="powerup-icon-wrap">
-              <img src="techassets/rapidshot.png" alt="Rapid Shot" class="powerup-sprite" />
+              <img src="techassets/rapidshot.png" alt="Rapid Shot" class="powerup-sprite">
             </div>
             <div class="powerup-info">
               <span class="powerup-name">RAPID SHOT</span>
-              <span class="powerup-effect">Doubles fire rate for 8 seconds.</span>
+              <span class="powerup-effect">Doubles fire rate for 8 seconds. sheesh</span>
             </div>
-          </article>
+          </li>
 
-        </div>
+        </ul>
       </div>
     </section>
 
@@ -417,7 +419,7 @@
         </div>
 
         <div class="about-credit">
-          <img src="techassets/newLogo.png" alt="TechNoPixel logo" class="about-logo" />
+          <img src="techassets/newLogo.png" alt="TechNoPixel logo" class="about-logo">
           <p class="credit-text">Created by <strong>Dave Punzalan</strong> · TECHNOPIXEL</p>
           <p class="credit-sub">TechNoPixel Web Game Development Workshop · December 10, 2026</p>
         </div>
@@ -426,17 +428,17 @@
     </section>
 
     <!-- ---- FOOTER ---- -->
-    <footer class="site-footer" role="contentinfo">
+    <footer class="site-footer">
       <div class="footer-inner">
         <span class="footer-brand">TECHNOPIXEL SPACE INVADERS</span>
         <span class="footer-credit">© 2026 Dave Punzalan · TechNoPixel</span>
-        <button class="btn btn-primary btn-sm footer-play-btn" id="footer-play-btn" aria-label="Play TECHNOPIXEL SPACE INVADERS">
+        <button type="button" class="btn btn-primary btn-sm footer-play-btn" id="footer-play-btn" aria-label="Play TECHNOPIXEL SPACE INVADERS">
           ▶ PLAY NOW
         </button>
       </div>
     </footer>
 
-  </div><!-- /#landing-screen -->
+  </main><!-- /#landing-screen -->
 
   <!-- ==========================================================
        SCREEN 3: GAME SCREEN
@@ -445,13 +447,14 @@
   <div id="game-screen" class="screen" role="application" aria-label="TECHNOPIXEL SPACE INVADERS gameplay">
 
     <!-- Back to menu button (top-left, always visible during gameplay) -->
-    <button class="btn-back-menu" id="btn-back-menu" aria-label="Return to main menu" title="Back to Menu">
+    <button type="button" class="btn-back-menu" id="btn-back-menu" aria-label="Return to main menu" title="Back to Menu">
       ◀ MENU
     </button>
 
     <!-- In-game music control (top-right) -->
     <div class="ingame-music-ctrl">
       <button
+        type="button"
         class="music-btn music-btn-sm"
         id="ingame-music-btn"
         aria-label="Toggle music"
@@ -473,9 +476,9 @@
       <div class="overlay-box">
         <h2 class="overlay-title">⏸ PAUSED</h2>
         <p class="overlay-sub">The Pixelverse awaits your return.</p>
-        <button class="btn btn-primary" id="resume-btn" aria-label="Resume game">▶ RESUME</button>
-        <button class="btn btn-outline" id="pause-restart-btn" aria-label="Restart game">↺ RESTART</button>
-        <button class="btn btn-outline" id="pause-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
+        <button type="button" class="btn btn-primary" id="resume-btn" aria-label="Resume game">▶ RESUME</button>
+        <button type="button" class="btn btn-outline" id="pause-restart-btn" aria-label="Restart game">↺ RESTART</button>
+        <button type="button" class="btn btn-outline" id="pause-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
       </div>
     </div>
 
@@ -505,8 +508,8 @@
             <span class="result-score-val result-hiscore" id="victory-hiscore">0</span>
           </div>
         </div>
-        <button class="btn btn-primary" id="victory-replay-btn" aria-label="Play again">▶ PLAY AGAIN</button>
-        <button class="btn btn-outline" id="victory-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
+        <button type="button" class="btn btn-primary" id="victory-replay-btn" aria-label="Play again">▶ PLAY AGAIN</button>
+        <button type="button" class="btn btn-outline" id="victory-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
       </div>
     </div>
 
@@ -529,8 +532,8 @@
             <span class="result-score-val result-hiscore" id="gameover-hiscore">0</span>
           </div>
         </div>
-        <button class="btn btn-primary" id="gameover-replay-btn" aria-label="Play again">▶ PLAY AGAIN</button>
-        <button class="btn btn-outline" id="gameover-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
+        <button type="button" class="btn btn-primary" id="gameover-replay-btn" aria-label="Play again">▶ PLAY AGAIN</button>
+        <button type="button" class="btn btn-outline" id="gameover-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
       </div>
     </div>
 
@@ -538,7 +541,7 @@
     <div id="mobile-controls" class="mobile-controls" aria-label="Touch controls" role="group">
 
       <!-- Virtual analog stick (left side) -->
-      <div class="joystick-wrap" id="joystick-wrap" aria-label="Movement joystick">
+      <div class="joystick-wrap" id="joystick-wrap" role="group" aria-label="Movement joystick">
         <div class="joystick-base" id="joystick-base">
           <div class="joystick-thumb" id="joystick-thumb" aria-hidden="true"></div>
         </div>
@@ -547,6 +550,7 @@
       <!-- Right-side action buttons -->
       <div class="action-btns">
         <button
+          type="button"
           class="btn-fire"
           id="btn-fire"
           aria-label="Fire"
@@ -558,6 +562,7 @@
         <span id="fire-hint" class="sr-only">Hold to fire continuously</span>
 
         <button
+          type="button"
           class="btn-pause-mobile"
           id="btn-pause-mobile"
           aria-label="Pause"
@@ -570,7 +575,7 @@
     </div><!-- /mobile-controls -->
 
     <!-- Active power-up HUD (shown during gameplay) -->
-    <div id="powerup-hud" class="powerup-hud" aria-live="polite" aria-label="Active power-ups"></div>
+    <div id="powerup-hud" class="powerup-hud" role="status" aria-live="polite" aria-label="Active power-ups"></div>
 
   </div><!-- /#game-screen -->
 

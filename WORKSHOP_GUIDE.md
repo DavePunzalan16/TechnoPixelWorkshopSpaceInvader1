@@ -5,6 +5,16 @@
 **Instructor:** Dave Punzalan · TECHNOPIXEL  
 **Duration:** 4 hours total (30 min setup + 150 min coding + 30 min buffer/challenge)
 
+> **Codebase status (last updated Oct 28 2026):**  
+> `index.html` has been fully audited and passes HTML-Validate with 0 errors.  
+> All void elements use HTML5 syntax (`<meta>`, `<link>`, `<img>`, `<br>`, `<input>` — no self-closing slash).  
+> Semantic structure: loading screen is `<section>`, landing page is `<main>`, all grids are `<ul>`/`<li>`.  
+> All 15 buttons have explicit `type="button"`.  
+> All inline `style=""` attributes have been moved to named CSS classes in `styles.css`.  
+> Power-up cards on the landing page use real image assets (`heart.png`, `shield.png`, `multishot.png`, `bigbulletmoto.png`, `rapidshot.png`).  
+> ARIA: no redundant roles, no misused `aria-label`, no `aria-hidden` on focusable elements.  
+> Duplicate `id="victory-menu-btn"` removed.
+
 ---
 
 ## Learning Objectives
@@ -60,7 +70,10 @@ Show the finished game running (pre-built version). Let students play for 2 minu
 
 **What to do:**
 1. Open VS Code. File → Open Folder → select the `Samplegame/` folder.
-2. Open `index.html`. Show the overall structure — loading screen, landing screen, game screen.
+2. Open `index.html`. Show the overall structure:
+   - `<section id="loading-screen">` — cinematic loading screen with progress bar
+   - `<main id="landing-screen">` — full landing page (nav, hero, how-to-play, enemies, power-ups, about, footer)
+   - `<div id="game-screen">` — game canvas and all in-game overlays
 3. Right-click `index.html` → Open with Live Server.
 4. The browser opens. Students should see the loading screen with the TechNoPixel logo and katakana animation.
 
@@ -69,6 +82,7 @@ Show the finished game running (pre-built version). Let students play for 2 minu
 - "It then fetches `styles.css` (the look) and `game.js` (the behavior)."
 - "`<link>` and `<script>` tags connect these files."
 - "The Canvas is a drawing surface — right now it's empty."
+- "We use semantic HTML tags (`<main>`, `<nav>`, `<section>`, `<footer>`) so the browser and screen readers understand the page structure."
 
 **Questions to ask:**
 - *"What do you think HTML does?"* → Structure / skeleton of the page.
@@ -310,6 +324,10 @@ if (player.lives <= 0) { triggerGameOver(); }
 
 **Focus areas:** SECTION 9 (power-ups)
 
+**Point out the landing page first:** Scroll to the Power-Ups section on the landing page.  
+Each card shows the actual in-game asset (`heart.png`, `shield.png`, `multishot.png`, `bigbulletmoto.png`, `rapidshot.png`) so students know exactly what to look for during gameplay.  
+"These images in the cards are the same images the game drops during play — so you know what to collect."
+
 Show `spawnPowerup`:
 
 ```javascript
@@ -479,6 +497,9 @@ Ask the class:
 | Music autoplay blocked | Browser policy | Remind students to click MUSIC button after page loads |
 | Power-up timer doesn't expire | Timer decremented but flag not reset | Set both `player.multishot = false` AND `player.multishotTimer = 0` |
 | Fullscreen doesn't work | Running from file:// not server | Use VS Code Live Server |
+| HTML-Validate errors on `<button>` | Missing `type` attribute | Add `type="button"` to every button that isn't inside a `<form>` |
+| HTML-Validate void-element errors | Self-closing slash on `<img />`, `<meta />`, etc. | HTML5 void elements don't need the slash — use `<img>`, `<meta>` |
+| HTML-Validate `aria-label-misuse` | `aria-label` placed on `<li>` or bare `<ul>` | Use `role="group"` on the `<ul>` to accept labeling; remove from `<li>` (visible text is sufficient) |
 
 ---
 
