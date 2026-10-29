@@ -165,11 +165,16 @@
           id="start-game-btn"
           aria-label="Start TECHNOPIXEL SPACE INVADERS"
         >
-          ▶ START GAME
+          ▶ CLASSIC MODE
         </button>
 
         <!-- Keyboard hint -->
-        <p class="hero-enter-hint">or press <kbd>ENTER</kbd> to begin</p>
+        <!-- INFINITY ROOM: endless mode (opens the records panel below) -->
+        <button type="button" class="btn btn-outline btn-infinity" id="infinity-open-btn" aria-label="Open Infinity Room endless mode">
+          ∞ INFINITY ROOM
+        </button>
+
+        <p class="hero-enter-hint">or press <kbd>ENTER</kbd> to begin Classic</p>
       </div>
 
       <!-- Floating spaceship decoration -->
@@ -346,7 +351,7 @@
     <section id="powerups" class="content-section" aria-label="Power-Ups">
       <div class="section-inner">
         <h2 class="section-title">POWER-UPS</h2>
-        <p class="section-sub">Destroy enemies for a 20% chance to drop a power-up. Fly into it to collect!</p>
+        <p class="section-sub">Rarer enemies drop better loot: Blue 3% · Red 5% · Green 9% · Pink 15%. Fly into a power-up to collect it!</p>
 
         <ul class="powerup-grid" role="group" aria-label="Power-ups">
 
@@ -439,6 +444,26 @@
     </footer>
 
   </main><!-- /#landing-screen -->
+
+  <!-- ==========================================================
+       INFINITY ROOM PANEL (personal records + start)
+       ========================================================== -->
+  <div id="infinity-panel" class="overlay inf-panel hidden" role="dialog" aria-modal="true" aria-label="Infinity Room">
+    <div class="overlay-box overlay-infinity">
+      <p class="inf-label">∞ ENDLESS MODE</p>
+      <h2 class="inf-title">INFINITY ROOM</h2>
+      <p class="inf-sub">SURVIVE THE PIXELVERSE</p>
+      <p class="overlay-sub">No final wave. Every wave hits harder. Last as long as you can.</p>
+      <div class="result-scores">
+        <div class="result-score-row"><span>BEST ROUND</span><span class="result-score-val" id="inf-best-wave">0</span></div>
+        <div class="result-score-row"><span>BEST SCORE</span><span class="result-score-val" id="inf-best-score">0</span></div>
+        <div class="result-score-row"><span>BEST SURVIVAL TIME</span><span class="result-score-val" id="inf-best-time">0:00</span></div>
+      </div>
+      <p class="inf-note" id="inf-note">PERSONAL RECORDS · SAVED ON THIS BROWSER ONLY</p>
+      <button type="button" class="btn btn-primary" id="start-infinity-btn">▶ START INFINITY</button>
+      <button type="button" class="btn btn-outline" id="inf-back-btn">◀ BACK TO MENU</button>
+    </div>
+  </div>
 
   <!-- ==========================================================
        SCREEN 3: GAME SCREEN
@@ -534,6 +559,24 @@
         </div>
         <button type="button" class="btn btn-primary" id="gameover-replay-btn" aria-label="Play again">▶ PLAY AGAIN</button>
         <button type="button" class="btn btn-outline" id="gameover-menu-btn" aria-label="Main menu">⌂ MAIN MENU</button>
+      </div>
+    </div>
+
+    <!-- === INFINITY RUN ENDED OVERLAY === -->
+    <div id="infinity-over-overlay" class="overlay hidden" role="dialog" aria-modal="true" aria-label="Infinity run ended">
+      <div class="overlay-box overlay-infinity">
+        <p class="gameover-label">∞ INFINITY RUN ENDED</p>
+        <h2 class="gameover-title">THE ROOM KEEPS GROWING</h2>
+        <p class="inf-newrec" id="inf-newrec" hidden>★ NEW PERSONAL RECORD ★</p>
+        <div class="result-scores">
+          <div class="result-score-row"><span>FINAL SCORE</span><span class="result-score-val" id="inf-over-score">0</span></div>
+          <div class="result-score-row"><span>WAVE REACHED</span><span class="result-score-val" id="inf-over-wave">1</span></div>
+          <div class="result-score-row"><span>SURVIVAL TIME</span><span class="result-score-val" id="inf-over-time">0:00</span></div>
+          <div class="result-score-row"><span>BEST ROUND</span><span class="result-score-val result-hiscore" id="inf-over-bestwave">0</span></div>
+          <div class="result-score-row"><span>BEST SCORE</span><span class="result-score-val result-hiscore" id="inf-over-bestscore">0</span></div>
+        </div>
+        <button type="button" class="btn btn-primary" id="infinity-replay-btn">▶ PLAY AGAIN</button>
+        <button type="button" class="btn btn-outline" id="infinity-menu-btn">⌂ BACK TO MENU</button>
       </div>
     </div>
 

@@ -1496,3 +1496,53 @@ body {
   background: rgba(255, 255, 255, 0.04);
   border-color: rgba(0, 245, 255, 0.15);
 }
+
+
+/* --------------------------------------------------------------------------
+   20. UPGRADE: LAYOUT FIXES, RESPONSIVE GRIDS & INFINITY ROOM
+   The HTML already used .enemy-group-title--spaced but no CSS existed for it,
+   which is why SIDE INVADERS sat right on top of the cards above it.
+   -------------------------------------------------------------------------- */
+[hidden] { display: none !important; }
+
+.enemy-group-title--spaced {
+  margin-top: 4rem;
+  padding-top: 2.5rem;
+  border-top: 1px dashed var(--color-border);
+}
+.enemy-group-desc { margin-bottom: 1.8rem; }
+
+.enemy-grid, .powerup-grid { list-style: none; align-items: stretch; }
+.enemy-grid { grid-template-columns: repeat(4, 1fr); }
+.enemy-card, .powerup-card { height: 100%; }
+.enemy-info { flex: 1; justify-content: flex-start; }
+.enemy-name, .enemy-desc, .powerup-effect { overflow-wrap: anywhere; }
+
+.hero-wordmark { max-width: min(340px, 80vw); }
+.btn-infinity { border-color: var(--color-cyan); color: var(--color-cyan); }
+.btn-infinity:hover { border-color: var(--color-cyan); color: var(--color-white); box-shadow: 0 0 16px rgba(0, 245, 255, 0.4); }
+
+.overlay-box { max-height: 92vh; overflow-y: auto; }
+
+/* Infinity Room panel / results */
+.inf-panel { position: fixed; z-index: 300; }
+.overlay-infinity { border-color: var(--color-cyan); box-shadow: 0 0 60px rgba(0, 245, 255, 0.3); }
+.inf-label { font-family: var(--font-pixel); font-size: 0.5rem; color: var(--color-cyan); letter-spacing: 0.2em; }
+.inf-title { font-family: var(--font-pixel); font-size: 1.1rem; color: var(--color-white); letter-spacing: 0.15em; text-shadow: 0 0 20px var(--color-magenta); }
+.inf-sub   { font-family: var(--font-pixel); font-size: 0.5rem; color: var(--color-magenta); letter-spacing: 0.2em; }
+.inf-note  { font-family: var(--font-pixel); font-size: 0.35rem; color: var(--color-dimwhite); letter-spacing: 0.1em; line-height: 1.8; }
+.inf-newrec { font-family: var(--font-pixel); font-size: 0.5rem; color: var(--color-success); text-shadow: 0 0 12px var(--color-success); animation: flicker 2s infinite; }
+
+/* Medium screens: 2 columns, hide the floating ship so it can't cover the title/CTA */
+@media (max-width: 900px) {
+  .enemy-grid   { grid-template-columns: repeat(2, 1fr); }
+  .powerup-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-ship-wrap { display: none; }
+}
+@media (max-width: 1200px) {
+  .hero-ship-img { width: 120px; }
+  .hero-ship-wrap { right: 3%; }
+}
+@media (max-width: 380px) {
+  .enemy-grid, .powerup-grid { grid-template-columns: 1fr; }
+}

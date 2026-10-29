@@ -47,7 +47,10 @@ document.addEventListener('DOMContentLoaded', function () {
     PLAYER_MAX_LIVES:   5,     // Maximum lives (heart power-up won't exceed this)
     PLAYER_W:           56,    // Player sprite render width  (px)
     PLAYER_H:           56,    // Player sprite render height (px)
-    PLAYER_BULLET_COOL: 300,   // Milliseconds between normal shots
+    PLAYER_BULLET_COOL: 160,   // Ms between shots (140-180 feels good). TIME-based, so holding Space can't flood bullets
+    MAX_PLAYER_BULLETS: 55,    // PERF: cap on active player bullets
+    MAX_ENEMY_BULLETS:  55,    // PERF: cap on active enemy bullets
+    MAX_PARTICLES:      120,   // PERF: cap on active particles
     INVULN_DURATION:    1500,  // Milliseconds of invulnerability after being hit
 
     // --- Enemies ---
@@ -68,7 +71,11 @@ document.addEventListener('DOMContentLoaded', function () {
     SIDE_ENEMY_INTERVAL: 5000, // Base ms between side enemy spawns
 
     // --- Power-ups ---
-    POWERUP_DROP_CHANCE: 0.20, // 20% chance per enemy death
+    POWERUP_DROP_CHANCE: [0.03, 0.05, 0.09, 0.15], // Per-kill chance by enemy type: blue, red, green, pink
+    POWERUP_MAX_ACTIVE:  3,    // Never more than 3 power-ups on screen at once
+    INF_MAX_SPEED_MULT:  4.0,  // Infinity Room difficulty caps (keeps it playable)
+    INF_MIN_SHOOT_MULT:  0.30,
+    INF_MAX_SIDE:        7,
     POWERUP_W:           36,
     POWERUP_H:           36,
     POWERUP_SPEED:       1.8,  // Falling speed (px/frame)
@@ -109,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function () {
       heart:         'techassets/heart.png',
       shield:        'techassets/shield.png',
       multishot:     'techassets/multishot.png',
-      bigbullet:     'techassets/bigbulletmoto.png', // actual filename differs from expected
+      bigbullet:     'techassets/bigbullet.png', // (renamed from bigbulletmoto.png)
       rapidshot:     'techassets/rapidshot.png',
     },
     music: 'techassets/music.mp3',
@@ -117,6 +124,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // Point values for each enemy type (index matches enemy1..enemy4)
   const ENEMY_POINTS = [10, 20, 50, 100];
+
+  // LOOT TABLES: which power-up is picked AFTER a drop succeeds (each row = 100%).
+  // Index matches enemy type: 0 blue, 1 red, 2 green, 3 pink. Side enemies use the same tier.
+  const LOOT_TABLES = [
+    { heart: 35, rapidshot: 35, multishot: 15, shield: 10, bigbullet: 5  }, // blue
+    { heart: 25, rapidshot: 30, multishot: 20, shield: 15, bigbullet: 10 }, // red
+    { heart: 15, rapidshot: 20, multishot: 25, shield: 22, bigbullet: 18 }, // green
+    { heart: 10, rapidshot: 15, multishot: 25, shield: 25, bigbullet: 25 }, // pink
+  ];
 
   // Power-up type definitions
   const POWERUP_TYPES = [
@@ -395,6 +411,16 @@ document.addEventListener('DOMContentLoaded', function () {
   // We store the requestAnimationFrame ID so we can stop/cancel duplicate loops
   let animFrameId = null;
 
+  // --- UPGRADE: mode, timing & records ---
+  let GAME_MODE = 'classic';          // 'classic' | 'infinity'
+  let runMs     = 0;                  // Survival time of the current run (ms, only counts while playing)
+  let hudKey    = '';                 // PERF: remembers what the power-up HUD last showed
+  let lastFrameTime = 0;              // Timestamp of the previous animation frame
+  let accumulator   = 0;              // Leftover ms waiting to be simulated
+  const STEP = 1000 / 60;             // Simulation always runs in fixed 60Hz steps
+  let infRec   = { wave: 0, score: 0, time: 0 };   // Saved Infinity Room records
+  let infStart = { wave: 0, score: 0, time: 0 };   // Records at the START of this run (to detect new bests)
+
   // --- Wave countdown timer ---
   let waveCountdownVal = 3;
   let waveCountdownTimer = null;
@@ -414,8 +440,8 @@ document.addEventListener('DOMContentLoaded', function () {
     let h = w / aspect;
     if (h > availH) { h = availH; w = h * aspect; }
 
-    canvas.width  = CONFIG.CANVAS_W; // Internal resolution (never changes)
-    canvas.height = CONFIG.CANVAS_H;
+    if (canvas.width !== CONFIG.CANVAS_W)   canvas.width  = CONFIG.CANVAS_W; // Internal resolution (setting it clears the canvas,
+    if (canvas.height !== CONFIG.CANVAS_H)  canvas.height = CONFIG.CANVAS_H; // so only touch it when it actually differs)
     canvas.style.width  = Math.floor(w) + 'px';
     canvas.style.height = Math.floor(h) + 'px';
   }
@@ -431,6 +457,11 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===========================================================================
 
   function initGame() {
+    // UPGRADE: fresh run bookkeeping
+    runMs = 0;
+    hudKey = '';
+    infStart = { wave: infRec.wave, score: infRec.score, time: infRec.time };
+
     // Reset player position to bottom-center
     player.x          = CONFIG.CANVAS_W / 2 - CONFIG.PLAYER_W / 2;
     player.y          = CONFIG.CANVAS_H - CONFIG.PLAYER_H - 20;
@@ -479,7 +510,7 @@ document.addEventListener('DOMContentLoaded', function () {
     enemies      = [];
     formationDir = 1;
 
-    const data   = WAVE_DATA[Math.min(waveIdx, WAVE_DATA.length - 1)];
+    const data   = getWaveData(waveIdx);
     const rows   = data.rows;
     const cols   = data.cols;
 
@@ -553,7 +584,7 @@ document.addEventListener('DOMContentLoaded', function () {
    */
   function handleKeyAction(code) {
     if (code === 'Enter' || code === 'NumpadEnter') {
-      if (STATE === 'menu')       { startGame(); }
+      if (STATE === 'menu')       { if (!infPanelOpen()) startGame(); }
       else if (STATE === 'game-over')  { restartGame(); }
       else if (STATE === 'victory')    { restartGame(); }
     }
@@ -748,6 +779,7 @@ document.addEventListener('DOMContentLoaded', function () {
    * A bullet is just an object with x, y, w, h, and speed.
    */
   function firePlayerBullet() {
+    if (bullets.length >= CONFIG.MAX_PLAYER_BULLETS) return; // PERF: hard cap
     playSound('shoot');
 
     const bulletW = player.bigBullet ? CONFIG.BIG_BULLET_W : CONFIG.BULLET_W;
@@ -845,10 +877,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Enemy shooting ---
     // Pick a random alive enemy to fire a projectile at a configurable interval
-    const waveData   = WAVE_DATA[Math.min(player.wave - 1, WAVE_DATA.length - 1)];
+    const waveData   = getWaveData(player.wave - 1);
     const shootDelay = CONFIG.ENEMY_SHOOT_INTERVAL * waveData.shootMult;
 
-    if (now - lastEnemyShot > shootDelay && aliveEnemies.length > 0) {
+    if (now - lastEnemyShot > shootDelay && aliveEnemies.length > 0 && enemyBullets.length < CONFIG.MAX_ENEMY_BULLETS) {
       // Choose a random alive enemy to shoot
       const shooter = aliveEnemies[Math.floor(Math.random() * aliveEnemies.length)];
       enemyBullets.push({
@@ -871,7 +903,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===========================================================================
 
   function updateSideEnemies(now) {
-    const waveData = WAVE_DATA[Math.min(player.wave - 1, WAVE_DATA.length - 1)];
+    const waveData = getWaveData(player.wave - 1);
     const interval = CONFIG.SIDE_ENEMY_INTERVAL / waveData.speedMult;
 
     // Spawn a new side enemy if enough time has passed
@@ -992,9 +1024,7 @@ document.addEventListener('DOMContentLoaded', function () {
           spawnParticles(e.x + e.w / 2, e.y + e.h / 2, ENEMY_POINTS[e.type] >= 50 ? '#ff2eff' : '#b44fff', 8);
 
           // Roll for power-up drop (20% chance)
-          if (Math.random() < CONFIG.POWERUP_DROP_CHANCE) {
-            spawnPowerup(e.x + e.w / 2, e.y + e.h / 2);
-          }
+          tryDropLoot(e.x + e.w / 2, e.y + e.h / 2, e.type); // ONE roll per kill
 
           break; // One bullet hits one enemy
         }
@@ -1021,9 +1051,7 @@ document.addEventListener('DOMContentLoaded', function () {
           playSound('enemyDie');
           spawnParticles(se.x + se.w / 2, se.y + se.h / 2, '#00f5ff', 10);
 
-          if (Math.random() < CONFIG.POWERUP_DROP_CHANCE) {
-            spawnPowerup(se.x + se.w / 2, se.y);
-          }
+          tryDropLoot(se.x + se.w / 2, se.y, se.type); // same tiers as formation enemies
           break;
         }
       }
@@ -1033,6 +1061,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Remove dead side enemies from the array
     sideEnemies = sideEnemies.filter(se => se.alive);
+    enemies = enemies.filter(e => e.alive); // PERF: dead formation enemies leave the array right away
 
     // --- Enemy bullets vs. player ---
     for (let ei = enemyBullets.length - 1; ei >= 0; ei--) {
@@ -1091,9 +1120,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===========================================================================
 
   /** spawnPowerup — creates a power-up object falling from a position. */
-  function spawnPowerup(cx, cy) {
+  function spawnPowerup(cx, cy, enemyType) {
     // Pick a random power-up type from the POWERUP_TYPES list
-    const typeData = POWERUP_TYPES[Math.floor(Math.random() * POWERUP_TYPES.length)];
+    const typeData = pickLootType(enemyType); // weighted by enemy rarity
 
     powerups.push({
       x:    cx - CONFIG.POWERUP_W / 2,
@@ -1159,6 +1188,13 @@ document.addEventListener('DOMContentLoaded', function () {
   function updatePowerupHUD() {
     const hud = document.getElementById('powerup-hud');
     if (!hud) return;
+    // PERF: only touch the DOM when the displayed text changes (timers tick once per second)
+    const key = [player.shieldActive,
+      player.multishot && Math.ceil(player.multishotTimer / 1000),
+      player.bigBullet && Math.ceil(player.bigBulletTimer / 1000),
+      player.rapidShot && Math.ceil(player.rapidShotTimer / 1000)].join('|');
+    if (key === hudKey) return;
+    hudKey = key;
     hud.innerHTML = '';
 
     if (player.shieldActive) {
@@ -1196,6 +1232,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /** spawnParticles — creates a burst of small colored squares. */
   function spawnParticles(cx, cy, color, count) {
+    if (particles.length >= CONFIG.MAX_PARTICLES) return; // PERF: hard cap
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const speed = 1 + Math.random() * 3;
@@ -1262,7 +1299,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (overlay)  overlay.classList.remove('hidden');
     if (titleEl)  titleEl.textContent = 'WAVE ' + player.wave;
 
-    if (player.wave >= CONFIG.TOTAL_WAVES) {
+    if (isFinalWave()) {
       // This was the last wave
       if (nextEl)   nextEl.textContent  = 'Final wave cleared! Victory incoming...';
     } else {
@@ -1287,11 +1324,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (overlay) overlay.classList.add('hidden');
 
-        if (player.wave >= CONFIG.TOTAL_WAVES) {
+        if (isFinalWave()) {
           triggerVictory(); // Last wave done — victory!
         } else {
           // Advance to next wave
           player.wave++;
+          if (GAME_MODE === 'infinity') saveInfinityRecords(); // save progress once per wave (not per frame)
           sideEnemies  = [];
           bullets      = [];
           enemyBullets = [];
@@ -1325,6 +1363,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===========================================================================
 
   function triggerGameOver() {
+    if (GAME_MODE === 'infinity') { triggerInfinityOver(); return; }
     STATE = 'game-over';
     playSound('gameOver');
     saveHighScore();
@@ -1346,6 +1385,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function update(now) {
     if (STATE !== 'playing') return; // Freeze simulation when not playing
 
+    runMs += STEP;   // survival clock (update() is skipped while paused)
     updatePlayer(now);
     updateBullets();
     updateEnemies(now);
@@ -1376,7 +1416,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Draw background image or fallback gradient
     if (imgs.background) {
-      ctx.drawImage(imgs.background, 0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+      ctx.drawImage(getBgCache(), 0, 0); // PERF: background is pre-scaled once, not every frame
     } else {
       // Fallback: a deep violet gradient
       const grad = ctx.createLinearGradient(0, 0, 0, CONFIG.CANVAS_H);
@@ -1420,7 +1460,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ctx.textAlign = 'left';
     ctx.fillStyle = '#b44fff';
     ctx.font = '10px "Press Start 2P", monospace';
-    ctx.fillText('WAVE ' + player.wave + '/' + CONFIG.TOTAL_WAVES, 12, 24);
+    ctx.fillText(waveLabel(), 12, 24);
 
     // Lives (top right — drawn as heart icons or life count)
     ctx.textAlign = 'right';
@@ -1432,7 +1472,7 @@ document.addEventListener('DOMContentLoaded', function () {
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(180,80,255,0.7)';
     ctx.font = '8px "Press Start 2P", monospace';
-    ctx.fillText('HI: ' + String(highScore).padStart(6, '0'), CONFIG.CANVAS_W / 2, 40);
+    ctx.fillText(hiLabel(), CONFIG.CANVAS_W / 2, 40);
     ctx.restore();
   }
 
@@ -1510,7 +1550,7 @@ document.addEventListener('DOMContentLoaded', function () {
         // Slight bob animation — shifts the y position by 2px on alternate frames
         const bob = e.animFrame === 1 ? 2 : 0;
         ctx.shadowColor = ['#7ec8ff', '#ff7e7e', '#7eff9e', '#ff7eff'][e.type];
-        ctx.shadowBlur  = 8;
+        ctx.shadowBlur  = 0; // PERF: no per-enemy glow (40+ blurred sprites per frame was costly)
         ctx.drawImage(img, e.x, e.y + bob, e.w, e.h);
         ctx.shadowBlur  = 0;
       } else {
@@ -1556,7 +1596,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (imgs.bullet) {
         // Bullet has a white background — add a magenta glow so it pops
         ctx.shadowColor = '#b44fff';
-        ctx.shadowBlur  = b.big ? 20 : 12;
+        ctx.shadowBlur  = bullets.length > 12 ? 0 : (b.big ? 20 : 12); // PERF: glow only when few bullets
         ctx.drawImage(imgs.bullet, b.x, b.y, b.w, b.h);
         ctx.shadowBlur  = 0;
       } else {
@@ -1579,7 +1619,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ctx.save();
       ctx.fillStyle   = '#ff4444';
       ctx.shadowColor = '#ff0000';
-      ctx.shadowBlur  = 10;
+      ctx.shadowBlur  = enemyBullets.length > 12 ? 0 : 10;
       ctx.fillRect(eb.x, eb.y, eb.w, eb.h);
       ctx.shadowBlur  = 0;
       ctx.restore();
@@ -1638,7 +1678,7 @@ document.addEventListener('DOMContentLoaded', function () {
       ctx.globalAlpha = p.life;
       ctx.fillStyle   = p.color;
       ctx.shadowColor = p.color;
-      ctx.shadowBlur  = 6;
+      ctx.shadowBlur  = 0; // PERF: particles are tiny - glow not worth it
       ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
       ctx.globalAlpha = 1;
       ctx.restore();
@@ -1725,6 +1765,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // AudioContext must be created AFTER a user gesture (click/tap) to comply with
   // browser autoplay policy.
   let audioCtx = null;
+  const sfxLast = {}; // last play time per effect (for the throttle above)
 
   function getAudioCtx() {
     if (!audioCtx) {
@@ -1740,6 +1781,10 @@ document.addEventListener('DOMContentLoaded', function () {
    *                        'enemyShoot' | 'waveClear' | 'victory' | 'gameOver' | 'shieldBreak'
    */
   function playSound(type) {
+    // PERF: max one instance of each effect every 70ms (spamming Space used to stack dozens of oscillators)
+    const tNow = performance.now();
+    if (sfxLast[type] && tNow - sfxLast[type] < 70) return;
+    sfxLast[type] = tNow;
     try {
       const ac = getAudioCtx();
       const osc   = ac.createOscillator();
@@ -1865,7 +1910,14 @@ document.addEventListener('DOMContentLoaded', function () {
   // ===========================================================================
 
   function gameLoop(timestamp) {
-    update(timestamp);  // Update game state
+    // Fixed-timestep: the simulation always advances in 1/60s steps, so speed is
+    // identical on 60Hz and 144Hz monitors. Max 3 catch-up steps avoids a "spiral of death".
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    accumulator += Math.min(100, timestamp - lastFrameTime);
+    lastFrameTime = timestamp;
+    let steps = 0;
+    while (accumulator >= STEP && steps < 3) { update(timestamp); accumulator -= STEP; steps++; }
+    if (accumulator > STEP) accumulator = 0;
     render();           // Draw the scene
 
     // Schedule the next frame — this creates a continuous loop
@@ -1874,6 +1926,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /** startGameLoop — starts the loop, making sure we don't create duplicates. */
   function startGameLoop() {
+    lastFrameTime = 0; accumulator = 0; // reset timing so a restart doesn't 'catch up'
     // Cancel any existing loop before starting a new one
     if (animFrameId) {
       cancelAnimationFrame(animFrameId);
@@ -1902,7 +1955,9 @@ document.addEventListener('DOMContentLoaded', function () {
    * startGame — called when the player clicks START GAME or presses Enter on the menu.
    * Transitions from menu to playing.
    */
-  function startGame() {
+  function startGame(mode) {
+    // Classic unless Infinity Room asked for it (click handlers pass an Event, which is ignored)
+    GAME_MODE = (mode === 'infinity') ? 'infinity' : 'classic';
     // Hide all overlays
     hideAllOverlays();
 
@@ -1969,7 +2024,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function hideAllOverlays() {
-    ['pause-overlay', 'wave-cleared-overlay', 'victory-overlay', 'gameover-overlay'].forEach(function (id) {
+    ['pause-overlay', 'wave-cleared-overlay', 'victory-overlay', 'gameover-overlay', 'infinity-over-overlay', 'infinity-panel'].forEach(function (id) {
       const el = document.getElementById(id);
       if (el) el.classList.add('hidden');
     });
@@ -2127,6 +2182,141 @@ document.addEventListener('DOMContentLoaded', function () {
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
   })();
+  // ===========================================================================
+  // UPGRADE: PERFORMANCE HELPERS, LOOT ROLLS & INFINITY ROOM
+  // ===========================================================================
+
+  // --- PERF: pre-scaled background -------------------------------------------
+  // Scaling a big PNG every frame is wasteful. We draw it ONCE onto an offscreen canvas.
+  let bgCache = null;
+  function getBgCache() {
+    if (!bgCache) {
+      bgCache = document.createElement('canvas');
+      bgCache.width  = CONFIG.CANVAS_W;
+      bgCache.height = CONFIG.CANVAS_H;
+      bgCache.getContext('2d').drawImage(imgs.background, 0, 0, CONFIG.CANVAS_W, CONFIG.CANVAS_H);
+    }
+    return bgCache;
+  }
+
+  // --- LOOT: two separate rolls ------------------------------------------------
+  // Roll 1 (tryDropLoot): does this kill drop anything at all? (3% / 5% / 9% / 15%)
+  // Roll 2 (pickLootType): WHICH power-up, using that enemy's LOOT_TABLES row.
+  function pickLootType(enemyType) {
+    const table = LOOT_TABLES[enemyType] || LOOT_TABLES[0];
+    let roll = Math.random() * 100;
+    for (const t of POWERUP_TYPES) {
+      roll -= (table[t.id] || 0);
+      if (roll < 0) return t;
+    }
+    return POWERUP_TYPES[0]; // safety net
+  }
+
+  function tryDropLoot(cx, cy, enemyType) {
+    if (powerups.length >= CONFIG.POWERUP_MAX_ACTIVE) return;               // screen already has 3
+    if (Math.random() >= CONFIG.POWERUP_DROP_CHANCE[enemyType]) return;     // no luck
+    spawnPowerup(cx, cy, enemyType);
+  }
+
+  // --- ENDLESS WAVES -------------------------------------------------------------
+  // Waves 1-5 use WAVE_DATA. Beyond that (Infinity Room) we extend the last row a little
+  // each wave, always clamped by the INF_* caps in CONFIG so it never becomes impossible.
+  function getWaveData(idx) {
+    if (idx < WAVE_DATA.length) return WAVE_DATA[idx];
+    const last  = WAVE_DATA[WAVE_DATA.length - 1];
+    const extra = idx - (WAVE_DATA.length - 1);
+    return {
+      speedMult: Math.min(CONFIG.INF_MAX_SPEED_MULT, last.speedMult + extra * 0.25),
+      shootMult: Math.max(CONFIG.INF_MIN_SHOOT_MULT, last.shootMult - extra * 0.03),
+      sideMax:   Math.min(CONFIG.INF_MAX_SIDE, last.sideMax + Math.floor(extra / 2)),
+      rows:      Math.min(5, last.rows + (extra >= 3 ? 1 : 0)),
+      cols:      last.cols,
+    };
+  }
+
+  // Classic ends at wave 5. Infinity Room has NO final wave.
+  function isFinalWave() { return GAME_MODE === 'classic' && player.wave >= CONFIG.TOTAL_WAVES; }
+  function waveLabel()   { return GAME_MODE === 'infinity' ? 'WAVE ' + player.wave + ' \u221E' : 'WAVE ' + player.wave + '/' + CONFIG.TOTAL_WAVES; }
+  function hiLabel() {
+    return GAME_MODE === 'infinity'
+      ? '\u221E ' + fmtTime(runMs) + '  BEST W' + infRec.wave
+      : 'HI: ' + String(highScore).padStart(6, '0');
+  }
+
+  // --- INFINITY ROOM RECORDS (localStorage, separate keys from Classic) ---------
+  const INF_KEYS = { wave: 'tp_inf_wave', score: 'tp_inf_score', time: 'tp_inf_time' };
+  let storageOK = true;
+  try {
+    infRec.wave  = parseInt(localStorage.getItem(INF_KEYS.wave)  || '0', 10) || 0;
+    infRec.score = parseInt(localStorage.getItem(INF_KEYS.score) || '0', 10) || 0;
+    infRec.time  = parseInt(localStorage.getItem(INF_KEYS.time)  || '0', 10) || 0;
+  } catch (e) { storageOK = false; }
+
+  function fmtTime(ms) {
+    const s = Math.floor(ms / 1000);
+    return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0');
+  }
+
+  // Called once per wave and once at game over - only writes when a record actually improved.
+  function saveInfinityRecords() {
+    let changed = false;
+    if (player.wave  > infRec.wave)  { infRec.wave  = player.wave;      changed = true; }
+    if (player.score > infRec.score) { infRec.score = player.score;     changed = true; }
+    if (runMs        > infRec.time)  { infRec.time  = Math.floor(runMs); changed = true; }
+    if (!changed) return;
+    try {
+      localStorage.setItem(INF_KEYS.wave,  infRec.wave);
+      localStorage.setItem(INF_KEYS.score, infRec.score);
+      localStorage.setItem(INF_KEYS.time,  infRec.time);
+    } catch (e) { storageOK = false; }
+  }
+
+  function setText(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
+
+  function updateInfinityPanel() {
+    setText('inf-best-wave',  infRec.wave);
+    setText('inf-best-score', infRec.score);
+    setText('inf-best-time',  fmtTime(infRec.time));
+    setText('inf-note', storageOK
+      ? 'PERSONAL RECORDS \u00B7 SAVED ON THIS BROWSER ONLY'
+      : 'STORAGE BLOCKED \u00B7 RECORDS WILL NOT PERSIST');
+  }
+
+  function infPanelOpen() {
+    const p = document.getElementById('infinity-panel');
+    return !!p && !p.classList.contains('hidden');
+  }
+
+  function triggerInfinityOver() {
+    if (STATE === 'game-over') return;
+    STATE = 'game-over';
+    playSound('gameOver');
+    saveInfinityRecords(); // update records BEFORE showing the results
+    const newRec = player.score > infStart.score || player.wave > infStart.wave || runMs > infStart.time;
+    setText('inf-over-score',     player.score);
+    setText('inf-over-wave',      player.wave);
+    setText('inf-over-time',      fmtTime(runMs));
+    setText('inf-over-bestwave',  infRec.wave);
+    setText('inf-over-bestscore', infRec.score);
+    const nr = document.getElementById('inf-newrec');
+    if (nr) nr.hidden = !newRec;
+    document.getElementById('infinity-over-overlay').classList.remove('hidden');
+  }
+
+  // --- Wiring (each listener is registered exactly once) ------------------------
+  function bind(id, fn) { const el = document.getElementById(id); if (el) el.addEventListener('click', fn); }
+  bind('infinity-open-btn',  function () { updateInfinityPanel(); document.getElementById('infinity-panel').classList.remove('hidden'); });
+  bind('inf-back-btn',       function () { document.getElementById('infinity-panel').classList.add('hidden'); });
+  bind('start-infinity-btn', function () { document.getElementById('infinity-panel').classList.add('hidden'); startGame('infinity'); });
+  bind('infinity-replay-btn', restartGame);
+  bind('infinity-menu-btn',   goToMenu);
+
+  // Auto-pause when the tab is hidden, and reset timing so there's no big time jump on return
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden && STATE === 'playing') pauseGame();
+    lastFrameTime = 0; accumulator = 0;
+  });
+
 
   // ===========================================================================
   // END OF GAME — everything is wired up!
